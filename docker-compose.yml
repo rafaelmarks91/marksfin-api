@@ -1,0 +1,20 @@
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: marksfin
+      MARIADB_USER: marksfin
+      MARIADB_PASSWORD: marksfin
+      MARIADB_ROOT_PASSWORD: marksfin_root
+    ports:
+      - '3306:3306'
+    volumes:
+      - marksfin_db_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mariadb-admin', 'ping', '-h', 'localhost', '-u', 'root', '--password=marksfin_root']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  marksfin_db_data:
