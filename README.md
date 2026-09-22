@@ -29,6 +29,20 @@ under `/api/v1`. `npm run db:migrate` applies the versioned `.sql` files in
 `src/database/migrations/` in order (schema, then the PBD executor infrastructure) — see
 [backend-backlog.md](./backend-backlog.md) for which stored procedures still need to be written.
 
+The `marksfin` database itself must exist before the first migration — it's a one-time step,
+not part of the migration runner:
+
+```sql
+CREATE DATABASE marksfin CHARACTER SET utf8mb4;
+```
+
+Don't add an explicit `COLLATE` here — let it inherit the server's default. Stored procedure
+local variables always use the server's default collation regardless of the database's, so
+pinning a different one on the database causes `Illegal mix of collations` errors the moment a
+procedure compares a variable against a table column (hit and fixed while validating this
+migration against the shared server — see the commit history). `docker-compose.yml`'s MariaDB
+image already creates the database this way via `MARIADB_DATABASE`, so local dev is unaffected.
+
 ## Scripts
 
 - `npm run dev` — run the API in watch mode
