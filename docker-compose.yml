@@ -1,3 +1,6 @@
+# Apenas para desenvolvimento local (sobe um MariaDB). Produção roda a API via
+# PM2 + Apache no servidor compartilhado, conectando a um MariaDB próprio —
+# ver README.md.
 services:
   db:
     image: mariadb:11

@@ -3,7 +3,8 @@
 Backend API for **MarksFin**, a personal-finance web app.
 
 This repository holds only the backend (Marco 0 / Fundação): a Fastify + TypeScript HTTP API,
-Prisma ORM targeting a MariaDB-compatible MySQL database, Zod validation, and Vitest tests.
+MariaDB (no ORM — all business logic lives in stored procedures, see
+[architecture-decisions.md](./architecture-decisions.md)), Zod validation, and Vitest tests.
 
 This is a polyrepo setup. The sibling repo `marksfin-app` holds the frontend, product docs, and
 brand kit.
@@ -19,21 +20,50 @@ brand kit.
 docker compose up -d
 cp .env.example .env
 npm install
-npm run db:generate
 npm run db:migrate
 npm run dev
 ```
 
 The API will listen on the port configured in `.env` (default `3333`), with routes mounted
-under `/api/v1`.
+under `/api/v1`. `npm run db:migrate` applies the versioned `.sql` files in
+`src/database/migrations/` in order (schema, then the PBD executor infrastructure) — see
+[backend-backlog.md](./backend-backlog.md) for which stored procedures still need to be written.
 
 ## Scripts
 
 - `npm run dev` — run the API in watch mode
 - `npm run build` — compile TypeScript to `dist`
 - `npm start` — run the compiled API
+- `npm run deploy` / `npm run start:prod` — build and (re)start via PM2
 - `npm run lint` — lint the codebase
 - `npm run typecheck` — type-check without emitting
 - `npm test` — run the test suite
-- `npm run db:generate` — generate the Prisma client
-- `npm run db:migrate` — run Prisma migrations in dev mode
+- `npm run db:migrate` — apply pending `.sql` migrations
+
+## Production: PM2 + Apache
+
+This API is deployed the same way as the sibling `teraodonto-api` project on the shared
+production server: PM2 keeps the compiled Node process alive, bound only to `127.0.0.1`, and a
+local Apache vhost reverse-proxies the public domain to it. `docker-compose.yml` is a local
+development convenience only (it just runs MariaDB) — it is not used in production.
+
+Ports already in use by other apps on that server: `teraodonto-api` listens on `3000` and
+`teraodonto-site` on `3001`. This API uses `3333` (`PORT` in `.env`) to avoid colliding with
+either.
+
+```bash
+npm install
+npm run build
+pm2 start ecosystem.config.cjs
+```
+
+Apache example:
+
+```apache
+ProxyPass /api http://127.0.0.1:3333/api
+ProxyPassReverse /api http://127.0.0.1:3333/api
+RequestHeader set X-Forwarded-Proto "https"
+```
+
+Set `HOST=127.0.0.1` in the production `.env` so the API is only reachable through the local
+Apache proxy, never directly from the internet.

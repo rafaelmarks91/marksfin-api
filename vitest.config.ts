@@ -7,7 +7,11 @@ export default defineConfig({
     globals: false,
     env: {
       NODE_ENV: 'test',
-      DATABASE_URL: 'mysql://marksfin:marksfin@localhost:3306/marksfin_test',
+      DB_HOST: 'localhost',
+      DB_PORT: '3306',
+      DB_USER: 'marksfin',
+      DB_PASSWORD: 'marksfin',
+      DB_NAME: 'marksfin_test',
       SESSION_SECRET: 'test-only-session-secret-please-change',
     },
   },

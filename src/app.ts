@@ -4,7 +4,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { env } from './shared/env.js';
 import errorHandlerPlugin from './plugins/error-handler.js';
-import prismaPlugin from './plugins/prisma.js';
+import databasePlugin from './plugins/database.js';
 import healthRoutes from './modules/health/health.routes.js';
 
 function genReqId(req: IncomingMessage): string {
@@ -50,7 +50,7 @@ export function buildApp() {
   });
 
   fastify.register(errorHandlerPlugin);
-  fastify.register(prismaPlugin);
+  fastify.register(databasePlugin);
 
   fastify.register(
     async (instance) => {
