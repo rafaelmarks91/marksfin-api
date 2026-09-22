@@ -68,3 +68,27 @@ restrito ao domínio da aplicação. A exposição pública é feita por um vhos
 `ProxyPass /api/v1` para o processo Node gerenciado pelo PM2. Ver
 [README.md](./README.md#production-pm2--apache) para o exemplo de vhost e a alocação de porta no
 servidor compartilhado com o TeraOdonto.
+
+## ADR-006: Cadastro fechado + painel admin em SPA separada
+
+MarksFin deixa de ter cadastro público. Só um usuário com `users.is_admin = TRUE` cria contas
+novas, via convite (`signup_invitations` — tabela e regras diferentes de `invitations`, que dá
+acesso somente-leitura a um espaço já existente; aqui o convite cria conta e espaço do zero).
+`sp_pbd_auth_cadastrar` exige um `convite_token_hash` válido, cujo e-mail bate exatamente com o
+e-mail cadastrado.
+
+A administração roda numa **SPA separada** (`master.marksfin.com.br`, repositório
+`marksfin-master`), não numa rota dentro do app principal (`app.marksfin.com.br`). As duas SPAs
+chamam a mesma API (`marksfin-api`) — não é um backend novo, só rotas novas sob `/admin`,
+protegidas checando `is_admin` (a própria procedure valida isso, nunca só o backend — mesmo
+espírito do ADR-002). Ver `0004_admin.sql` e o módulo "Administração" em
+[backend-backlog.md](./backend-backlog.md).
+
+**Por quê:** o projeto é pensado desde já pra eventualmente ser compartilhado com amigos, cada
+um com conta própria e independente — não como acesso somente-leitura à conta de quem convidou
+(isso já existe via `invitations`). Fechar o cadastro e ter um painel de administração evita que
+qualquer pessoa com o link do app crie uma conta sozinha.
+
+O primeiro admin não passa pelo fluxo de convite (não existe admin nenhum pra convidar o
+primeiro) — nasce por `npm run db:seed-admin`, que lê `ADMIN_NAME`/`ADMIN_EMAIL`/
+`ADMIN_PASSWORD` do ambiente e nunca fica versionado.

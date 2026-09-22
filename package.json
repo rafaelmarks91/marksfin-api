@@ -17,10 +17,12 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "db:migrate": "tsx src/database/migrate.ts"
+    "db:migrate": "tsx src/database/migrate.ts",
+    "db:seed-admin": "tsx src/database/seed-admin.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
+    "argon2": "^0.44.0",
     "dotenv": "^18.0.2",
     "fastify": "^5.1.0",
     "fastify-plugin": "^5.0.1",
@@ -42,6 +44,7 @@
   "allowScripts": {
     "fsevents@2.3.3": true,
     "esbuild@0.28.2": true,
-    "esbuild@0.21.5": true
+    "esbuild@0.21.5": true,
+    "argon2@0.44.0": true
   }
 }
